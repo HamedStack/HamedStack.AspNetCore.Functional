@@ -19,13 +19,14 @@ public static class ResultExtensions
     {
         return result.Status switch
         {
-            ResultStatus.Ok => new OkResult(),
-            ResultStatus.Error => new BadRequestObjectResult(result.ErrorMessage),
+            ResultStatus.Success => new OkResult(),
+            ResultStatus.Failure => new BadRequestObjectResult(result.Exception),
             ResultStatus.Forbidden => new ForbidResult(),
-            ResultStatus.Unauthorized => new UnauthorizedObjectResult(result.ErrorMessage),
-            ResultStatus.Invalid => new BadRequestObjectResult(result.ErrorMessage),
-            ResultStatus.NotFound => new NotFoundObjectResult(result.ErrorMessage),
-            ResultStatus.Conflict => new ConflictObjectResult(result.ErrorMessage),
+            ResultStatus.Unauthorized => new UnauthorizedObjectResult(result.Exception),
+            ResultStatus.Invalid => new BadRequestObjectResult(result.Exception),
+            ResultStatus.NotFound => new NotFoundObjectResult(result.Exception),
+            ResultStatus.Conflict => new ConflictObjectResult(result.Exception),
+            ResultStatus.Unsupported =>  new StatusCodeResult(501),
             _ => throw new NotSupportedException($"Unknown result status: {result.Status}"),
         };
     }
@@ -37,6 +38,17 @@ public static class ResultExtensions
     /// <returns>The transformed IActionResult.</returns>
     public static IActionResult ToActionResult<T>(this Result<T> result)
     {
-        return result.Status == ResultStatus.Ok ? new OkObjectResult(result.Value) : ((Result)result).ToActionResult();
+        return result.Status switch
+        {
+            ResultStatus.Success => new OkObjectResult(result.Value) ,
+            ResultStatus.Failure => new BadRequestObjectResult(result.Exception),
+            ResultStatus.Forbidden => new ForbidResult(),
+            ResultStatus.Unauthorized => new UnauthorizedObjectResult(result.Exception),
+            ResultStatus.Invalid => new BadRequestObjectResult(result.Exception),
+            ResultStatus.NotFound => new NotFoundObjectResult(result.Exception),
+            ResultStatus.Conflict => new ConflictObjectResult(result.Exception),
+            ResultStatus.Unsupported =>  new StatusCodeResult(501),
+            _ => throw new NotSupportedException($"Unknown result status: {result.Status}"),
+        };
     }
 }

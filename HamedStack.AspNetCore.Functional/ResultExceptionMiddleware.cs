@@ -36,7 +36,7 @@ public class ResultExceptionMiddleware
         }
         catch (Exception ex)
         {
-            var result = Result.Error(ex.Message);
+            var result = Result.Failure(ex.Message);
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             await context.Response.WriteAsync(JsonSerializer.Serialize(result));
